@@ -46,7 +46,7 @@ QVariant WindowsCacheScanTableModel::data(const QModelIndex& index, int role) co
   if (role == Qt::UserRole) return item.bytes;
   if (role == Qt::UserRole + 1) return item.files;
   if (role == Qt::TextAlignmentRole && (index.column() == SizeColumn || index.column() == FilesColumn)) {
-    return Qt::AlignRight | Qt::AlignVCenter;
+    return QVariant::fromValue(Qt::Alignment(Qt::AlignRight | Qt::AlignVCenter));
   }
   if (role == Qt::ForegroundRole && index.column() == RiskColumn) {
     if (item.riskLevel.compare("high", Qt::CaseInsensitive) == 0) return QBrush(QColor("#b42318"));
