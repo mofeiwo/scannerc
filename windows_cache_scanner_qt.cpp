@@ -52,22 +52,52 @@ QStringList WindowsCacheScannerQt::expandWildcardPath(const QString& pattern) {
     return QFileInfo::exists(expanded) ? QStringList{QDir::cleanPath(expanded)} : QStringList{};
   }
 
-  const QFileInfo info(expanded);
-  const QString parentPath = info.dir().absolutePath();
-  const QString leafPattern = info.fileName();
-  QDir parentDir(parentPath);
-  if (!parentDir.exists()) return {};
+  const QString normalized = QDir::fromNativeSeparators(expanded);
+  const QStringList rawParts = normalized.split('/', Qt::SkipEmptyParts);
+  if (rawParts.isEmpty()) return {};
 
-  const QRegularExpression regex = wildcardToRegex(leafPattern);
-  QStringList results;
-  const QFileInfoList entries =
-      parentDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Files, QDir::Name);
-  for (const QFileInfo& entry : entries) {
-    if (regex.match(entry.fileName()).hasMatch()) {
-      results.push_back(QDir::cleanPath(entry.absoluteFilePath()));
-    }
+  QStringList currentPaths;
+  int startIndex = 0;
+
+  if (rawParts.first().endsWith(':')) {
+    currentPaths.push_back(rawParts.first() + '/');
+    startIndex = 1;
+  } else if (normalized.startsWith('/')) {
+    currentPaths.push_back("/");
+  } else {
+    currentPaths.push_back(QDir::currentPath());
   }
-  return results;
+
+  for (int i = startIndex; i < rawParts.size(); ++i) {
+    const QString& part = rawParts.at(i);
+    const bool hasWildcard = part.contains('*') || part.contains('?');
+    QStringList nextPaths;
+
+    for (const QString& basePath : currentPaths) {
+      QDir baseDir(basePath);
+      if (!baseDir.exists()) continue;
+
+      if (!hasWildcard) {
+        const QString candidate = QDir::cleanPath(baseDir.filePath(part));
+        if (QFileInfo::exists(candidate)) nextPaths.push_back(candidate);
+        continue;
+      }
+
+      const QRegularExpression regex = wildcardToRegex(part);
+      const QFileInfoList entries =
+          baseDir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
+      for (const QFileInfo& entry : entries) {
+        if (regex.match(entry.fileName()).hasMatch()) {
+          nextPaths.push_back(QDir::cleanPath(entry.absoluteFilePath()));
+        }
+      }
+    }
+
+    currentPaths = nextPaths;
+    if (currentPaths.isEmpty()) return {};
+  }
+
+  return currentPaths;
 }
 
 bool WindowsCacheScannerQt::containsTokenI(const QString& text, const QString& token) {
@@ -128,6 +158,68 @@ CacheAppRule WindowsCacheScannerQt::parseAppRule(const QJsonObject& object) {
     app.rules.push_back(parseRule(value.toObject()));
   }
   return app;
+}
+
+CleanupCatalogSubItem WindowsCacheScannerQt::parseCatalogSubItem(const QJsonObject& object) {
+  CleanupCatalogSubItem subItem;
+  subItem.name = object.value("name").toString();
+  for (const QJsonValue& value : object.value("directories").toArray()) {
+    subItem.directories.push_back(value.toString());
+  }
+  subItem.deleteRisk = object.value("delete_risk").toString("medium");
+  subItem.defaultChecked = object.value("default_checked").toBool(false);
+  return subItem;
+}
+
+CleanupCatalogItem WindowsCacheScannerQt::parseCatalogItem(const QJsonObject& object) {
+  CleanupCatalogItem item;
+  item.id = object.value("id").toString();
+  item.name = object.value("name").toString();
+  for (const QJsonValue& value : object.value("sub_items").toArray()) {
+    item.subItems.push_back(parseCatalogSubItem(value.toObject()));
+  }
+  return item;
+}
+
+CleanupCatalogSection WindowsCacheScannerQt::parseCatalogSection(const QJsonObject& object) {
+  CleanupCatalogSection section;
+  section.id = object.value("id").toString();
+  section.name = object.value("name").toString();
+  for (const QJsonValue& value : object.value("items").toArray()) {
+    section.items.push_back(parseCatalogItem(value.toObject()));
+  }
+  return section;
+}
+
+std::optional<CacheMatchItem> WindowsCacheScannerQt::scanPathTarget(const QString& appName,
+                                                                    const QString& category,
+                                                                    const QString& riskLevel,
+                                                                    const QString& targetPath,
+                                                                    bool deleteSafe,
+                                                                    const QJsonObject& globalRules) {
+  const QString expanded = expandEnvPattern(targetPath);
+  const QFileInfo info(expanded);
+  if (!info.exists()) return std::nullopt;
+
+  if (info.isDir()) {
+    return scanDirectoryTree(appName, category, riskLevel, expanded, deleteSafe, globalRules);
+  }
+
+  if (!info.isFile()) return std::nullopt;
+
+  const int minAgeMinutes = globalRules.value("default_min_file_age_minutes").toInt(10);
+  if (!olderThanMinutes(info, minAgeMinutes)) return std::nullopt;
+  if (isExcludedFile(info, globalRules)) return std::nullopt;
+
+  CacheMatchItem result;
+  result.appName = appName;
+  result.category = category;
+  result.path = QDir::cleanPath(info.absoluteFilePath());
+  result.riskLevel = riskLevel;
+  result.deleteSafe = deleteSafe;
+  result.bytes = info.size();
+  result.files = 1;
+  return result;
 }
 
 std::optional<CacheMatchItem> WindowsCacheScannerQt::scanDirectoryTree(const QString& appName,
@@ -273,6 +365,29 @@ QVector<CacheMatchItem> WindowsCacheScannerQt::scanApp(const CacheAppRule& app,
   return results;
 }
 
+QVector<CacheMatchItem> WindowsCacheScannerQt::scanCatalogSection(const CleanupCatalogSection& section,
+                                                                  const QJsonObject& globalRules) {
+  QVector<CacheMatchItem> results;
+
+  for (const CleanupCatalogItem& item : section.items) {
+    for (const CleanupCatalogSubItem& subItem : item.subItems) {
+      const bool deleteSafe =
+          subItem.deleteRisk.compare("low", Qt::CaseInsensitive) == 0 && subItem.defaultChecked;
+
+      for (const QString& directoryPattern : subItem.directories) {
+        const QStringList targets = expandWildcardPath(directoryPattern);
+        for (const QString& target : targets) {
+          auto match = scanPathTarget(section.name, item.name + " / " + subItem.name, subItem.deleteRisk,
+                                      target, deleteSafe, globalRules);
+          if (match.has_value()) results.push_back(*match);
+        }
+      }
+    }
+  }
+
+  return results;
+}
+
 QVector<CacheMatchItem> WindowsCacheScannerQt::scanRuleFile(const QString& ruleFilePath,
                                                             QString* errorMessage) {
   QFile file(ruleFilePath);
@@ -290,13 +405,21 @@ QVector<CacheMatchItem> WindowsCacheScannerQt::scanRuleFile(const QString& ruleF
 
   const QJsonObject root = document.object();
   const QJsonObject globalRules = root.value("global_rules").toObject();
+  const QJsonArray cleanupCatalog = root.value("cleanup_catalog").toArray();
   const QJsonArray apps = root.value("apps").toArray();
 
   QVector<CacheMatchItem> allMatches;
-  for (const QJsonValue& value : apps) {
-    const CacheAppRule appRule = parseAppRule(value.toObject());
-    const QVector<CacheMatchItem> matches = scanApp(appRule, globalRules);
-    allMatches += matches;
+  if (!cleanupCatalog.isEmpty()) {
+    for (const QJsonValue& value : cleanupCatalog) {
+      const CleanupCatalogSection section = parseCatalogSection(value.toObject());
+      allMatches += scanCatalogSection(section, globalRules);
+    }
+  } else {
+    for (const QJsonValue& value : apps) {
+      const CacheAppRule appRule = parseAppRule(value.toObject());
+      const QVector<CacheMatchItem> matches = scanApp(appRule, globalRules);
+      allMatches += matches;
+    }
   }
 
   std::sort(allMatches.begin(), allMatches.end(), [](const CacheMatchItem& a, const CacheMatchItem& b) {

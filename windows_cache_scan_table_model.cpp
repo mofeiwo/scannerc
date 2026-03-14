@@ -5,6 +5,16 @@
 
 #include <algorithm>
 
+namespace {
+
+QString localizedRiskLevel(const QString& riskLevel) {
+  if (riskLevel.compare("high", Qt::CaseInsensitive) == 0) return QStringLiteral("高");
+  if (riskLevel.compare("medium", Qt::CaseInsensitive) == 0) return QStringLiteral("中");
+  return QStringLiteral("低");
+}
+
+}  // namespace
+
 WindowsCacheScanTableModel::WindowsCacheScanTableModel(QObject* parent)
     : QAbstractTableModel(parent) {}
 
@@ -33,9 +43,9 @@ QVariant WindowsCacheScanTableModel::data(const QModelIndex& index, int role) co
       case FilesColumn:
         return item.files;
       case SafeColumn:
-        return item.deleteSafe ? QStringLiteral("Yes") : QStringLiteral("No");
+        return item.deleteSafe ? QStringLiteral("是") : QStringLiteral("否");
       case RiskColumn:
-        return item.riskLevel;
+        return localizedRiskLevel(item.riskLevel);
       case PathColumn:
         return item.path;
       default:
@@ -61,19 +71,19 @@ QVariant WindowsCacheScanTableModel::headerData(int section, Qt::Orientation ori
 
   switch (section) {
     case AppNameColumn:
-      return QStringLiteral("App");
+      return QStringLiteral("分类");
     case CategoryColumn:
-      return QStringLiteral("Category");
+      return QStringLiteral("子项");
     case SizeColumn:
-      return QStringLiteral("Size");
+      return QStringLiteral("大小");
     case FilesColumn:
-      return QStringLiteral("Files");
+      return QStringLiteral("文件数");
     case SafeColumn:
-      return QStringLiteral("Safe Delete");
+      return QStringLiteral("建议默认勾选");
     case RiskColumn:
-      return QStringLiteral("Risk");
+      return QStringLiteral("风险");
     case PathColumn:
-      return QStringLiteral("Path");
+      return QStringLiteral("目录");
     default:
       return {};
   }

@@ -6,8 +6,11 @@
     "%USERPROFILE%": "C:\\Users\\{username}",
     "%LOCALAPPDATA%": "C:\\Users\\{username}\\AppData\\Local",
     "%APPDATA%": "C:\\Users\\{username}\\AppData\\Roaming",
+    "%PROGRAMDATA%": "C:\\ProgramData",
     "%PROGRAMFILES%": "C:\\Program Files",
     "%PROGRAMFILES(X86)%": "C:\\Program Files (x86)",
+    "%PUBLIC%": "C:\\Users\\Public",
+    "%SYSTEMROOT%": "C:\\Windows",
     "%TEMP%": "C:\\Users\\{username}\\AppData\\Local\\Temp"
   },
   "global_rules": {
@@ -61,6 +64,624 @@
       "Service Worker\\CacheStorage"
     ]
   },
+  "cleanup_catalog": [
+    {
+      "id": "software_specific_cleanup",
+      "name": "软件专清",
+      "description": "Competitor-inspired Windows cleanup catalog for product landing. These items are intended for UI presentation and rule planning.",
+      "items": [
+        {
+          "id": "microsoft_products",
+          "name": "微软产品",
+          "sub_items": [
+            {
+              "name": "Microsoft Office 升级文件",
+              "directories": [
+                "%SYSTEMROOT%\\Installer",
+                "C:\\MSOCache"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "Microsoft Office 最近使用文件列表",
+              "directories": [
+                "%APPDATA%\\Microsoft\\Office\\Recent"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "Windows Defender 隔离文件",
+              "directories": [
+                "%PROGRAMDATA%\\Microsoft\\Windows Defender\\Quarantine"
+              ],
+              "delete_risk": "high",
+              "default_checked": false
+            },
+            {
+              "name": "Windows Defender 扫描历史",
+              "directories": [
+                "%PROGRAMDATA%\\Microsoft\\Windows Defender\\Scans\\History"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "Windows Defender 病毒库备份文件",
+              "directories": [
+                "%PROGRAMDATA%\\Microsoft\\Windows Defender\\Definition Updates"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": ".NET Framework 缓存文件",
+              "directories": [
+                "%SYSTEMROOT%\\Microsoft.NET\\Framework\\v2.0.50727\\Temporary ASP.NET Files",
+                "%SYSTEMROOT%\\Microsoft.NET\\Framework\\v4.0.30319\\Temporary ASP.NET Files",
+                "%SYSTEMROOT%\\Microsoft.NET\\Framework64\\v2.0.50727\\Temporary ASP.NET Files",
+                "%SYSTEMROOT%\\Microsoft.NET\\Framework64\\v4.0.30319\\Temporary ASP.NET Files"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            }
+          ]
+        },
+        {
+          "id": "log_files",
+          "name": "日志文件",
+          "sub_items": [
+            {
+              "name": "Windows 系统日志",
+              "directories": [
+                "%SYSTEMROOT%\\Logs"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "IIS 日志文件缓存",
+              "directories": [
+                "C:\\inetpub\\logs\\LogFiles"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "软件错误报告",
+              "directories": [
+                "%PROGRAMDATA%\\Microsoft\\Windows\\WER",
+                "%LOCALAPPDATA%\\Microsoft\\Windows\\WER"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            }
+          ]
+        },
+        {
+          "id": "system_cache",
+          "name": "系统缓存",
+          "sub_items": [
+            {
+              "name": "Windows 预读缓存",
+              "directories": [
+                "%SYSTEMROOT%\\Prefetch"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "缩略图缓存",
+              "directories": [
+                "%LOCALAPPDATA%\\Microsoft\\Windows\\Explorer"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "字体缓存",
+              "directories": [
+                "%SYSTEMROOT%\\ServiceProfiles\\LocalService\\AppData\\Local\\FontCache"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "证书缓存",
+              "directories": [
+                "%LOCALAPPDATA%\\..\\LocalLow\\Microsoft\\CryptnetUrlCache"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "DirectX 着色器缓存",
+              "directories": [
+                "%LOCALAPPDATA%\\D3DSCache"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "远程桌面缓存",
+              "directories": [
+                "%LOCALAPPDATA%\\Microsoft\\Terminal Server Client\\Cache"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            }
+          ]
+        },
+        {
+          "id": "other_software",
+          "name": "其他软件",
+          "sub_items": [
+            {
+              "name": "联想应用商店缓存与日志",
+              "directories": [
+                "%LOCALAPPDATA%\\Lenovo",
+                "%PROGRAMDATA%\\Lenovo"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "QQ 缓存与更新缓存",
+              "directories": [
+                "%APPDATA%\\Tencent\\QQ",
+                "%LOCALAPPDATA%\\Tencent\\QQ"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "网易云音乐缓存",
+              "directories": [
+                "%LOCALAPPDATA%\\Netease\\CloudMusic",
+                "%APPDATA%\\Netease\\CloudMusic"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "百度网盘日志",
+              "directories": [
+                "%APPDATA%\\BaiduNetdisk",
+                "%LOCALAPPDATA%\\BaiduNetdisk"
+              ],
+              "delete_risk": "high",
+              "default_checked": false
+            },
+            {
+              "name": "爱奇艺视频缓存与日志",
+              "directories": [
+                "%LOCALAPPDATA%\\QYClient",
+                "%APPDATA%\\Qiyi"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "企业微信图片与缓存",
+              "directories": [
+                "%APPDATA%\\Tencent\\WXWork",
+                "%LOCALAPPDATA%\\Tencent\\WXWork",
+                "%USERPROFILE%\\Documents\\WXWork"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            }
+          ]
+        },
+        {
+          "id": "recycle_bin",
+          "name": "回收站",
+          "sub_items": [
+            {
+              "name": "回收站文件",
+              "directories": [
+                "C:\\$Recycle.Bin"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            }
+          ]
+        },
+        {
+          "id": "system_patches",
+          "name": "系统补丁",
+          "sub_items": [
+            {
+              "name": "Windows Update 下载缓存",
+              "directories": [
+                "%SYSTEMROOT%\\SoftwareDistribution\\Download"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "Windows 更新传递优化文件",
+              "directories": [
+                "%PROGRAMDATA%\\Microsoft\\Windows\\DeliveryOptimization",
+                "%SYSTEMROOT%\\SoftwareDistribution\\DeliveryOptimization"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "Windows Update 自动更新日志",
+              "directories": [
+                "%SYSTEMROOT%\\Logs\\WindowsUpdate"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            }
+          ]
+        },
+        {
+          "id": "chrome",
+          "name": "Chrome",
+          "sub_items": [
+            {
+              "name": "Chrome 浏览器缓存",
+              "directories": [
+                "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default\\Cache",
+                "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default\\Code Cache",
+                "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default\\GPUCache"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "Chrome 更新缓存",
+              "directories": [
+                "%LOCALAPPDATA%\\Google\\Update"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "Chrome 日志",
+              "directories": [
+                "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Crashpad",
+                "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\SwReporter"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            }
+          ]
+        },
+        {
+          "id": "edge",
+          "name": "Edge 浏览器",
+          "sub_items": [
+            {
+              "name": "Edge 浏览器缓存",
+              "directories": [
+                "%LOCALAPPDATA%\\Microsoft\\Edge\\User Data\\Default\\Cache",
+                "%LOCALAPPDATA%\\Microsoft\\Edge\\User Data\\Default\\Code Cache",
+                "%LOCALAPPDATA%\\Microsoft\\Edge\\User Data\\Default\\GPUCache"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "Edge 更新文件",
+              "directories": [
+                "%PROGRAMFILES(X86)%\\Microsoft\\EdgeUpdate"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "Edge 浏览器日志",
+              "directories": [
+                "%LOCALAPPDATA%\\Microsoft\\Edge\\User Data\\Crashpad"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            }
+          ]
+        },
+        {
+          "id": "ie",
+          "name": "IE 浏览器",
+          "sub_items": [
+            {
+              "name": "IE 浏览器缓存",
+              "directories": [
+                "%LOCALAPPDATA%\\Microsoft\\Windows\\INetCache"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            }
+          ]
+        },
+        {
+          "id": "system_files",
+          "name": "系统文件",
+          "sub_items": [
+            {
+              "name": "Windows Installer 临时缓存",
+              "directories": [
+                "%SYSTEMROOT%\\Installer"
+              ],
+              "delete_risk": "high",
+              "default_checked": false
+            },
+            {
+              "name": "WinSxS 缓存备份",
+              "directories": [
+                "%SYSTEMROOT%\\WinSxS"
+              ],
+              "delete_risk": "high",
+              "default_checked": false
+            },
+            {
+              "name": "软件临时安装文件",
+              "directories": [
+                "%SYSTEMROOT%\\Temp",
+                "%TEMP%"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "内存转储文件",
+              "directories": [
+                "%SYSTEMROOT%\\MEMORY.DMP",
+                "%SYSTEMROOT%\\Minidump"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            }
+          ]
+        },
+        {
+          "id": "wps",
+          "name": "WPS",
+          "sub_items": [
+            {
+              "name": "WPS 安装更新缓存文件",
+              "directories": [
+                "%LOCALAPPDATA%\\Kingsoft\\WPS Office",
+                "%PROGRAMDATA%\\Kingsoft"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "WPS 日志与广告缓存",
+              "directories": [
+                "%APPDATA%\\Kingsoft\\WPS Office",
+                "%LOCALAPPDATA%\\Kingsoft\\WPS Office"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            }
+          ]
+        },
+        {
+          "id": "metro",
+          "name": "Metro 通讯",
+          "sub_items": [
+            {
+              "name": "Metro 通讯缓存",
+              "directories": [
+                "%LOCALAPPDATA%\\Packages\\*\\LocalState",
+                "%LOCALAPPDATA%\\Packages\\*\\TempState"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "Metro 通讯日志",
+              "directories": [
+                "%LOCALAPPDATA%\\Packages\\*\\LocalState\\Logs"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            }
+          ]
+        },
+        {
+          "id": "temporary_files",
+          "name": "临时文件",
+          "sub_items": [
+            {
+              "name": "用户临时文件",
+              "directories": [
+                "%TEMP%"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "系统临时文件",
+              "directories": [
+                "%SYSTEMROOT%\\Temp"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": "最近打开文件与跳转列表",
+              "directories": [
+                "%APPDATA%\\Microsoft\\Windows\\Recent",
+                "%APPDATA%\\Microsoft\\Windows\\Recent\\AutomaticDestinations",
+                "%APPDATA%\\Microsoft\\Windows\\Recent\\CustomDestinations"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "Download 目录下的文件",
+              "directories": [
+                "%USERPROFILE%\\Downloads"
+              ],
+              "delete_risk": "high",
+              "default_checked": false
+            }
+          ]
+        },
+        {
+          "id": "tencent_video",
+          "name": "腾讯视频",
+          "sub_items": [
+            {
+              "name": "腾讯视频日志文件",
+              "directories": [
+                "%APPDATA%\\Tencent\\QQLive",
+                "%LOCALAPPDATA%\\Tencent\\QQLive"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            }
+          ]
+        },
+        {
+          "id": "qihu_360",
+          "name": "360 安全卫士",
+          "sub_items": [
+            {
+              "name": "360 安全卫士缓存与扫描日志",
+              "directories": [
+                "%PROGRAMDATA%\\360safe",
+                "%APPDATA%\\360safe",
+                "%LOCALAPPDATA%\\360safe"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unused_system_software",
+      "name": "系统不常用软件",
+      "items": [
+        {
+          "id": "sample_office_components",
+          "name": "Office / Defender / .NET 冷数据",
+          "sub_items": [
+            {
+              "name": "Office 升级与安装缓存",
+              "directories": [
+                "C:\\MSOCache",
+                "%SYSTEMROOT%\\Installer"
+              ],
+              "delete_risk": "high",
+              "default_checked": false
+            },
+            {
+              "name": "Defender 历史与备份",
+              "directories": [
+                "%PROGRAMDATA%\\Microsoft\\Windows Defender\\Scans\\History",
+                "%PROGRAMDATA%\\Microsoft\\Windows Defender\\Definition Updates"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            },
+            {
+              "name": ".NET Framework 临时缓存",
+              "directories": [
+                "%SYSTEMROOT%\\Microsoft.NET\\Framework\\v2.0.50727\\Temporary ASP.NET Files",
+                "%SYSTEMROOT%\\Microsoft.NET\\Framework\\v4.0.30319\\Temporary ASP.NET Files",
+                "%SYSTEMROOT%\\Microsoft.NET\\Framework64\\v2.0.50727\\Temporary ASP.NET Files",
+                "%SYSTEMROOT%\\Microsoft.NET\\Framework64\\v4.0.30319\\Temporary ASP.NET Files"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unused_input_methods",
+      "name": "不常用输入法",
+      "items": [
+        {
+          "id": "ime_packages",
+          "name": "输入法组件",
+          "sub_items": [
+            {
+              "name": "日文输入法",
+              "directories": [
+                "%SYSTEMROOT%\\IME\\IMEJP"
+              ],
+              "delete_risk": "high",
+              "default_checked": false
+            },
+            {
+              "name": "韩文输入法",
+              "directories": [
+                "%SYSTEMROOT%\\IME\\IMEKR"
+              ],
+              "delete_risk": "high",
+              "default_checked": false
+            },
+            {
+              "name": "繁体输入法",
+              "directories": [
+                "%SYSTEMROOT%\\IME\\IMETC"
+              ],
+              "delete_risk": "high",
+              "default_checked": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sample_files",
+      "name": "示例文件",
+      "items": [
+        {
+          "id": "windows_samples",
+          "name": "Windows 示例资源",
+          "sub_items": [
+            {
+              "name": "示例图片",
+              "directories": [
+                "%PUBLIC%\\Pictures\\Sample Pictures"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "示例音乐",
+              "directories": [
+                "%PUBLIC%\\Music\\Sample Music"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "示例视频",
+              "directories": [
+                "%PUBLIC%\\Videos\\Sample Videos"
+              ],
+              "delete_risk": "low",
+              "default_checked": true
+            },
+            {
+              "name": "系统自带壁纸",
+              "directories": [
+                "%SYSTEMROOT%\\Web\\Wallpaper",
+                "%SYSTEMROOT%\\Web\\4K\\Wallpaper",
+                "%SYSTEMROOT%\\Web\\Screen"
+              ],
+              "delete_risk": "medium",
+              "default_checked": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "apps": [
     {
       "id": "wechat",

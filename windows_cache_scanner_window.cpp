@@ -30,6 +30,12 @@
 
 namespace {
 
+QString localizedRiskLevel(const QString& riskLevel) {
+  if (riskLevel.compare("high", Qt::CaseInsensitive) == 0) return QStringLiteral("高");
+  if (riskLevel.compare("medium", Qt::CaseInsensitive) == 0) return QStringLiteral("中");
+  return QStringLiteral("低");
+}
+
 int riskScore(const QString& riskLevel) {
   if (riskLevel.compare("high", Qt::CaseInsensitive) == 0) return 3;
   if (riskLevel.compare("medium", Qt::CaseInsensitive) == 0) return 2;
@@ -228,9 +234,13 @@ QVector<CacheMatchItem> buildSystemCacheItems() {
 QVector<CacheMatchItem> buildAggregatedItems(const QVector<CacheMatchItem>& rawItems) {
   QMap<QString, CacheMatchItem> grouped;
   QMap<QString, QStringList> pathBuckets;
+  bool hasCatalogStyleItems = false;
 
   for (const CacheMatchItem& raw : rawItems) {
-    CacheMatchItem& item = grouped[raw.appName];
+    if (raw.category.contains(" / ")) hasCatalogStyleItems = true;
+
+    const QString groupKey = raw.appName + "\n" + raw.category;
+    CacheMatchItem& item = grouped[groupKey];
     if (item.appName.isEmpty()) {
       item.appName = raw.appName;
       item.category = raw.category;
@@ -244,7 +254,7 @@ QVector<CacheMatchItem> buildAggregatedItems(const QVector<CacheMatchItem>& rawI
 
     item.bytes += raw.bytes;
     item.files += raw.files;
-    pathBuckets[raw.appName].push_back(raw.path);
+    pathBuckets[groupKey].push_back(raw.path);
   }
 
   QVector<CacheMatchItem> result;
@@ -264,8 +274,10 @@ QVector<CacheMatchItem> buildAggregatedItems(const QVector<CacheMatchItem>& rawI
     result.push_back(item);
   }
 
-  for (const CacheMatchItem& systemItem : buildSystemCacheItems()) {
-    result.push_back(systemItem);
+  if (!hasCatalogStyleItems) {
+    for (const CacheMatchItem& systemItem : buildSystemCacheItems()) {
+      result.push_back(systemItem);
+    }
   }
 
   return result;
@@ -309,8 +321,11 @@ protected:
     const QString riskText = m->data(riskIndex, Qt::DisplayRole).toString();
     const QString pathText = m->data(pathIndex, Qt::DisplayRole).toString();
 
-    if (safeOnly_ && safeText.compare("Yes", Qt::CaseInsensitive) != 0) return false;
-    if (riskFilter_ != "All" && riskText.compare(riskFilter_, Qt::CaseInsensitive) != 0) return false;
+    if (safeOnly_ && safeText.compare(QStringLiteral("是"), Qt::CaseInsensitive) != 0) return false;
+    if (riskFilter_ != QStringLiteral("全部") &&
+        riskText.compare(localizedRiskLevel(riskFilter_), Qt::CaseInsensitive) != 0) {
+      return false;
+    }
 
     if (searchText_.isEmpty()) return true;
     return appName.contains(searchText_, Qt::CaseInsensitive) ||
@@ -321,7 +336,7 @@ protected:
 private:
   QString searchText_;
   bool safeOnly_ = false;
-  QString riskFilter_ = "All";
+  QString riskFilter_ = QStringLiteral("全部");
 };
 
 class WindowsCacheScannerWindow : public QWidget {
@@ -331,28 +346,29 @@ public:
         summaryLabel_(new QLabel(this)),
         rulePathLabel_(new QLabel(this)),
         searchEdit_(new QLineEdit(this)),
-        safeOnlyCheck_(new QCheckBox(QStringLiteral("Safe Only"), this)),
+        safeOnlyCheck_(new QCheckBox(QStringLiteral("仅看建议默认勾选"), this)),
         riskCombo_(new QComboBox(this)),
         tableView_(new QTableView(this)),
         model_(new WindowsCacheScanTableModel(this)),
         proxyModel_(new CacheFilterProxyModel(this)) {
-    setWindowTitle(QStringLiteral("Windows Cache Scanner"));
+    setWindowTitle(QStringLiteral("Windows 缓存扫描器"));
     resize(1320, 760);
 
-    auto* chooseButton = new QPushButton(QStringLiteral("Choose Rule File"), this);
-    auto* scanButton = new QPushButton(QStringLiteral("Start Scan"), this);
-    auto* clearFilterButton = new QPushButton(QStringLiteral("Clear Filters"), this);
-    searchEdit_->setPlaceholderText(QStringLiteral("Search app, category, or path"));
-    riskCombo_->addItems({QStringLiteral("All"), QStringLiteral("low"), QStringLiteral("medium"), QStringLiteral("high")});
+    auto* chooseButton = new QPushButton(QStringLiteral("选择规则文件"), this);
+    auto* scanButton = new QPushButton(QStringLiteral("开始扫描"), this);
+    auto* clearFilterButton = new QPushButton(QStringLiteral("清空筛选"), this);
+    searchEdit_->setPlaceholderText(QStringLiteral("搜索分类、子项或目录"));
+    riskCombo_->addItems(
+        {QStringLiteral("全部"), QStringLiteral("低"), QStringLiteral("中"), QStringLiteral("高")});
 
     auto* buttonLayout = new QHBoxLayout;
     buttonLayout->addWidget(chooseButton);
     buttonLayout->addWidget(scanButton);
     buttonLayout->addSpacing(12);
-    buttonLayout->addWidget(new QLabel(QStringLiteral("Search:"), this));
+    buttonLayout->addWidget(new QLabel(QStringLiteral("搜索:"), this));
     buttonLayout->addWidget(searchEdit_, 1);
     buttonLayout->addWidget(safeOnlyCheck_);
-    buttonLayout->addWidget(new QLabel(QStringLiteral("Risk:"), this));
+    buttonLayout->addWidget(new QLabel(QStringLiteral("风险:"), this));
     buttonLayout->addWidget(riskCombo_);
     buttonLayout->addWidget(clearFilterButton);
     buttonLayout->addStretch();
@@ -388,7 +404,7 @@ public:
     connect(chooseButton, &QPushButton::clicked, this, [this]() {
       const QString filePath = QFileDialog::getOpenFileName(
           this,
-          QStringLiteral("Choose Rule File"),
+          QStringLiteral("选择规则文件"),
           ruleFilePath_.isEmpty() ? QApplication::applicationDirPath() : ruleFilePath_,
           QStringLiteral("JSON Files (*.json)"));
       if (!filePath.isEmpty()) setRuleFile(filePath);
@@ -398,7 +414,7 @@ public:
       QString errorMessage;
       const QVector<CacheMatchItem> rawItems = WindowsCacheScannerQt::scanRuleFile(ruleFilePath_, &errorMessage);
       if (!errorMessage.isEmpty()) {
-        QMessageBox::warning(this, QStringLiteral("Scan Failed"), errorMessage);
+        QMessageBox::warning(this, QStringLiteral("扫描失败"), errorMessage);
         return;
       }
 
@@ -446,7 +462,7 @@ private:
     const QModelIndex riskIndex = proxyModel_->index(proxyIndex.row(), WindowsCacheScanTableModel::RiskColumn);
     const QModelIndex pathIndex = proxyModel_->index(proxyIndex.row(), WindowsCacheScanTableModel::PathColumn);
 
-    QString details = QStringLiteral("App: %1\nCategory: %2\nSize: %3\nFiles: %4\nSafe Delete: %5\nRisk: %6\n\nPaths:\n%7")
+    QString details = QStringLiteral("分类: %1\n子项: %2\n大小: %3\n文件数: %4\n建议默认勾选: %5\n风险: %6\n\n目录:\n%7")
                           .arg(proxyModel_->data(appIndex).toString(),
                                proxyModel_->data(categoryIndex).toString(),
                                proxyModel_->data(sizeIndex).toString(),
@@ -456,14 +472,14 @@ private:
                                proxyModel_->data(pathIndex).toString());
 
     auto* dialog = new QDialog(this);
-    dialog->setWindowTitle(QStringLiteral("Scan Details"));
+    dialog->setWindowTitle(QStringLiteral("扫描详情"));
     dialog->resize(760, 420);
 
     auto* textEdit = new QTextEdit(dialog);
     textEdit->setReadOnly(true);
     textEdit->setPlainText(details);
 
-    auto* closeButton = new QPushButton(QStringLiteral("Close"), dialog);
+    auto* closeButton = new QPushButton(QStringLiteral("关闭"), dialog);
     connect(closeButton, &QPushButton::clicked, dialog, &QDialog::accept);
 
     auto* layout = new QVBoxLayout(dialog);
@@ -487,9 +503,9 @@ private:
     openPath = openPath.trimmed();
 
     QMenu menu(this);
-    QAction* openFolderAction = menu.addAction(QStringLiteral("Open Path"));
-    QAction* copyPathAction = menu.addAction(QStringLiteral("Copy Path"));
-    QAction* detailAction = menu.addAction(QStringLiteral("View Details"));
+    QAction* openFolderAction = menu.addAction(QStringLiteral("打开目录"));
+    QAction* copyPathAction = menu.addAction(QStringLiteral("复制目录"));
+    QAction* detailAction = menu.addAction(QStringLiteral("查看详情"));
 
     QAction* chosen = menu.exec(tableView_->viewport()->mapToGlobal(pos));
     if (chosen == openFolderAction) {
@@ -503,7 +519,7 @@ private:
 
   void setRuleFile(const QString& path) {
     ruleFilePath_ = path;
-    rulePathLabel_->setText(QStringLiteral("Rule File: %1").arg(ruleFilePath_));
+    rulePathLabel_->setText(QStringLiteral("规则文件: %1").arg(ruleFilePath_));
   }
 
   void refreshSummary() {
@@ -511,7 +527,7 @@ private:
     for (int row = 0; row < proxyModel_->rowCount(); ++row) {
       visibleBytes += proxyModel_->data(proxyModel_->index(row, WindowsCacheScanTableModel::SizeColumn), Qt::UserRole).toLongLong();
     }
-    summaryLabel_->setText(QStringLiteral("Visible Rows: %1 / %2    Visible Cache: %3    Total Cache: %4")
+    summaryLabel_->setText(QStringLiteral("当前可见: %1 / %2 项    当前大小: %3    总大小: %4")
                                .arg(proxyModel_->rowCount())
                                .arg(model_->rowCount())
                                .arg(WindowsCacheScannerQt::formatSize(visibleBytes))

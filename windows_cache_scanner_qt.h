@@ -27,6 +27,25 @@ struct CacheAppRule {
   QVector<CacheRule> rules;
 };
 
+struct CleanupCatalogSubItem {
+  QString name;
+  QStringList directories;
+  QString deleteRisk;
+  bool defaultChecked = false;
+};
+
+struct CleanupCatalogItem {
+  QString id;
+  QString name;
+  QVector<CleanupCatalogSubItem> subItems;
+};
+
+struct CleanupCatalogSection {
+  QString id;
+  QString name;
+  QVector<CleanupCatalogItem> items;
+};
+
 struct CacheMatchItem {
   QString appName;
   QString category;
@@ -50,6 +69,15 @@ private:
   static bool olderThanMinutes(const QFileInfo& info, int minutes);
   static CacheRule parseRule(const QJsonObject& object);
   static CacheAppRule parseAppRule(const QJsonObject& object);
+  static CleanupCatalogSubItem parseCatalogSubItem(const QJsonObject& object);
+  static CleanupCatalogItem parseCatalogItem(const QJsonObject& object);
+  static CleanupCatalogSection parseCatalogSection(const QJsonObject& object);
+  static std::optional<CacheMatchItem> scanPathTarget(const QString& appName,
+                                                      const QString& category,
+                                                      const QString& riskLevel,
+                                                      const QString& targetPath,
+                                                      bool deleteSafe,
+                                                      const QJsonObject& globalRules);
   static std::optional<CacheMatchItem> scanDirectoryTree(const QString& appName,
                                                          const QString& category,
                                                          const QString& riskLevel,
@@ -57,4 +85,6 @@ private:
                                                          bool deleteSafe,
                                                          const QJsonObject& globalRules);
   static QVector<CacheMatchItem> scanApp(const CacheAppRule& app, const QJsonObject& globalRules);
+  static QVector<CacheMatchItem> scanCatalogSection(const CleanupCatalogSection& section,
+                                                    const QJsonObject& globalRules);
 };
