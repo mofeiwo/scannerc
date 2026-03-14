@@ -1,0 +1,56 @@
+name: Build Windows Portable
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "windows_cache_*.cpp"
+      - "windows_cache_*.h"
+      - "windows_cache_rules.json"
+      - "CMakeLists.txt"
+      - ".github/workflows/build-windows-portable.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.8.2"
+          host: "windows"
+          target: "desktop"
+          arch: "win64_msvc2022_64"
+          cache: true
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure
+        shell: cmd
+        run: |
+          cmake -S . -B build-win -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%Qt6_DIR%\..\.."
+
+      - name: Build GUI
+        shell: cmd
+        run: |
+          cmake --build build-win --config Release --target windows_cache_scanner_gui
+
+      - name: Prepare portable package
+        shell: cmd
+        run: |
+          if not exist dist mkdir dist
+          copy /Y build-win\windows_cache_scanner_gui.exe dist\
+          copy /Y windows_cache_rules.json dist\
+          windeployqt --release --dir dist build-win\windows_cache_scanner_gui.exe
+
+      - name: Upload portable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-cache-scanner-portable
+          path: dist/**
+          if-no-files-found: error

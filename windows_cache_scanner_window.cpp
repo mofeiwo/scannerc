@@ -72,43 +72,155 @@ CacheMatchItem scanSystemPath(const QString& appName,
   return item;
 }
 
+CacheMatchItem scanSystemFile(const QString& appName, const QString& category, const QString& filePath) {
+  CacheMatchItem item;
+  item.appName = appName;
+  item.category = category;
+  item.path = QDir::cleanPath(filePath);
+  item.riskLevel = QStringLiteral("low");
+  item.deleteSafe = true;
+
+  QFileInfo info(filePath);
+  if (!info.exists() || !info.isFile()) return item;
+
+  item.bytes = info.size();
+  item.files = 1;
+  return item;
+}
+
+void appendIfHasFiles(QVector<CacheMatchItem>& items, const CacheMatchItem& item) {
+  if (item.files > 0 || item.bytes > 0) items.push_back(item);
+}
+
+CacheMatchItem mergeSystemItems(const QString& appName,
+                                const QString& category,
+                                const QVector<CacheMatchItem>& children) {
+  CacheMatchItem result;
+  result.appName = appName;
+  result.category = category;
+  result.riskLevel = QStringLiteral("low");
+  result.deleteSafe = true;
+
+  QStringList paths;
+  for (const CacheMatchItem& child : children) {
+    if (child.files == 0 && child.bytes == 0) continue;
+    result.bytes += child.bytes;
+    result.files += child.files;
+    paths.push_back(child.path);
+  }
+  paths.removeDuplicates();
+
+  if (paths.size() == 1) {
+    result.path = paths.first();
+  } else if (paths.size() == 2) {
+    result.path = paths.join("\n");
+  } else if (paths.size() > 2) {
+    result.path = QStringLiteral("%1\n%2\n... (%3 paths)")
+                      .arg(paths.value(0), paths.value(1))
+                      .arg(paths.size());
+  }
+  return result;
+}
+
 QVector<CacheMatchItem> buildSystemCacheItems() {
   const QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
   const QString localAppData = env.value("LOCALAPPDATA");
+  const QString appData = env.value("APPDATA");
+  const QString programData = env.value("ProgramData", "C:/ProgramData");
   const QString tempPath = env.value("TEMP");
   const QString windowsDir = env.value("WINDIR", "C:/Windows");
+  const QString systemDrive = env.value("SystemDrive", "C:");
 
   QVector<CacheMatchItem> items;
 
-  const CacheMatchItem userTemp =
-      scanSystemPath(QStringLiteral("System Temp"), QStringLiteral("system_temp"), tempPath);
-  if (userTemp.files > 0) items.push_back(userTemp);
+  appendIfHasFiles(items, mergeSystemItems(QStringLiteral("临时文件"),
+                                           QStringLiteral("system_temp"),
+                                           {
+                                               scanSystemPath(QStringLiteral("临时文件"), QStringLiteral("system_temp"), tempPath),
+                                               scanSystemPath(QStringLiteral("临时文件"), QStringLiteral("system_temp"), localAppData + "/Temp"),
+                                           }));
 
-  const CacheMatchItem localTemp =
-      scanSystemPath(QStringLiteral("Local Temp"), QStringLiteral("system_temp"), localAppData + "/Temp");
-  if (localTemp.files > 0 && localTemp.path != userTemp.path) items.push_back(localTemp);
+  appendIfHasFiles(items, mergeSystemItems(QStringLiteral("日志文件"),
+                                           QStringLiteral("system_logs"),
+                                           {
+                                               scanSystemPath(QStringLiteral("日志文件"), QStringLiteral("system_logs"), tempPath, {"*.log", "*.txt"}, true),
+                                               scanSystemPath(QStringLiteral("日志文件"), QStringLiteral("system_logs"), localAppData + "/Temp", {"*.log", "*.txt"}, true),
+                                               scanSystemPath(QStringLiteral("日志文件"), QStringLiteral("system_logs"), windowsDir + "/Logs"),
+                                           }));
 
-  const CacheMatchItem inetCache = scanSystemPath(QStringLiteral("Windows INetCache"),
-                                                  QStringLiteral("system_cache"),
-                                                  localAppData + "/Microsoft/Windows/INetCache");
-  if (inetCache.files > 0) items.push_back(inetCache);
+  appendIfHasFiles(items, mergeSystemItems(QStringLiteral("系统缓存"),
+                                           QStringLiteral("system_cache"),
+                                           {
+                                               scanSystemPath(QStringLiteral("系统缓存"), QStringLiteral("system_cache"), localAppData + "/Microsoft/Windows/INetCache"),
+                                               scanSystemPath(QStringLiteral("系统缓存"), QStringLiteral("system_cache"), localAppData + "/Microsoft/Windows/Explorer", {"thumbcache*.db", "iconcache*.db"}, false),
+                                               scanSystemPath(QStringLiteral("系统缓存"), QStringLiteral("system_cache"), localAppData + "/D3DSCache"),
+                                           }));
 
-  const CacheMatchItem thumbCache = scanSystemPath(QStringLiteral("Thumbnail Cache"),
-                                                   QStringLiteral("system_cache"),
-                                                   localAppData + "/Microsoft/Windows/Explorer",
-                                                   {"thumbcache*.db", "iconcache*.db"},
-                                                   false);
-  if (thumbCache.files > 0) items.push_back(thumbCache);
+  appendIfHasFiles(items, scanSystemPath(QStringLiteral("IE浏览器"),
+                                         QStringLiteral("browser_cache"),
+                                         localAppData + "/Microsoft/Windows/INetCache/IE"));
 
-  const CacheMatchItem crashDumps = scanSystemPath(QStringLiteral("Crash Dumps"),
-                                                   QStringLiteral("system_cache"),
-                                                   localAppData + "/CrashDumps");
-  if (crashDumps.files > 0) items.push_back(crashDumps);
+  appendIfHasFiles(items, scanSystemPath(QStringLiteral("系统补丁"),
+                                         QStringLiteral("system_patch"),
+                                         windowsDir + "/SoftwareDistribution/Download"));
 
-  const CacheMatchItem windowsUpdate = scanSystemPath(QStringLiteral("Windows Update Cache"),
-                                                      QStringLiteral("system_cache"),
-                                                      windowsDir + "/SoftwareDistribution/Download");
-  if (windowsUpdate.files > 0) items.push_back(windowsUpdate);
+  appendIfHasFiles(items, mergeSystemItems(QStringLiteral("系统文件"),
+                                           QStringLiteral("system_files"),
+                                           {
+                                               scanSystemPath(QStringLiteral("系统文件"), QStringLiteral("system_files"), windowsDir + "/Prefetch"),
+                                               scanSystemPath(QStringLiteral("系统文件"), QStringLiteral("system_files"), localAppData + "/Microsoft/Windows/Caches"),
+                                           }));
+
+  appendIfHasFiles(items, mergeSystemItems(QStringLiteral("Office缓存"),
+                                           QStringLiteral("office_cache"),
+                                           {
+                                               scanSystemPath(QStringLiteral("Office缓存"), QStringLiteral("office_cache"), localAppData + "/Microsoft/Office/16.0/OfficeFileCache"),
+                                               scanSystemPath(QStringLiteral("Office缓存"), QStringLiteral("office_cache"), localAppData + "/Microsoft/Office/15.0/OfficeFileCache"),
+                                               scanSystemPath(QStringLiteral("Office缓存"), QStringLiteral("office_cache"), appData + "/Microsoft/Office"),
+                                           }));
+
+  appendIfHasFiles(items, mergeSystemItems(QStringLiteral("系统补丁备份"),
+                                           QStringLiteral("system_backup"),
+                                           {
+                                               scanSystemPath(QStringLiteral("系统补丁备份"), QStringLiteral("system_backup"), windowsDir + "/SoftwareDistribution/DataStore"),
+                                               scanSystemPath(QStringLiteral("系统补丁备份"), QStringLiteral("system_backup"), windowsDir + "/WinSxS/Backup"),
+                                           }));
+
+  appendIfHasFiles(items, mergeSystemItems(QStringLiteral("安装包残留"),
+                                           QStringLiteral("installer_cache"),
+                                           {
+                                               scanSystemPath(QStringLiteral("安装包残留"), QStringLiteral("installer_cache"), programData + "/Package Cache"),
+                                               scanSystemPath(QStringLiteral("安装包残留"), QStringLiteral("installer_cache"), windowsDir + "/Installer"),
+                                           }));
+
+  appendIfHasFiles(items, mergeSystemItems(QStringLiteral("系统转储文件"),
+                                           QStringLiteral("system_dump"),
+                                           {
+                                               scanSystemPath(QStringLiteral("系统转储文件"), QStringLiteral("system_dump"), windowsDir + "/Minidump"),
+                                               scanSystemPath(QStringLiteral("系统转储文件"), QStringLiteral("system_dump"), localAppData + "/CrashDumps"),
+                                               scanSystemFile(QStringLiteral("系统转储文件"), QStringLiteral("system_dump"), windowsDir + "/MEMORY.DMP"),
+                                           }));
+
+  QStringList recycleRoots;
+  const QFileInfoList drives = QDir::drives();
+  for (const QFileInfo& drive : drives) {
+    recycleRoots.push_back(QDir::cleanPath(drive.absoluteFilePath() + "/$Recycle.Bin"));
+  }
+  QVector<CacheMatchItem> recycleChildren;
+  for (const QString& recycleRoot : recycleRoots) {
+    recycleChildren.push_back(scanSystemPath(QStringLiteral("回收站"), QStringLiteral("recycle_bin"), recycleRoot));
+  }
+  appendIfHasFiles(items, mergeSystemItems(QStringLiteral("回收站"), QStringLiteral("recycle_bin"), recycleChildren));
+
+  appendIfHasFiles(items, scanSystemPath(QStringLiteral("微软产品"),
+                                         QStringLiteral("microsoft_cache"),
+                                         localAppData + "/Microsoft",
+                                         {"*.log", "*.tmp", "*.etl", "*.cab"},
+                                         true));
+
+  appendIfHasFiles(items, scanSystemPath(QStringLiteral("百度网盘"),
+                                         QStringLiteral("cloud_drive"),
+                                         localAppData + "/BaiduNetdisk"));
 
   return items;
 }
