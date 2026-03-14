@@ -1,0 +1,898 @@
+{
+  "version": "1.1.0",
+  "platform": "windows",
+  "description": "Cache scanning rules for common Windows desktop applications, including Chinese domestic software.",
+  "variables": {
+    "%USERPROFILE%": "C:\\Users\\{username}",
+    "%LOCALAPPDATA%": "C:\\Users\\{username}\\AppData\\Local",
+    "%APPDATA%": "C:\\Users\\{username}\\AppData\\Roaming",
+    "%PROGRAMFILES%": "C:\\Program Files",
+    "%PROGRAMFILES(X86)%": "C:\\Program Files (x86)",
+    "%TEMP%": "C:\\Users\\{username}\\AppData\\Local\\Temp"
+  },
+  "global_rules": {
+    "default_follow_symlink": false,
+    "default_include_hidden": true,
+    "default_min_file_age_minutes": 10,
+    "default_exclude_extensions": [
+      ".db",
+      ".sqlite",
+      ".sqlite3",
+      ".ldb",
+      ".sst",
+      ".logdb"
+    ],
+    "default_exclude_file_names": [
+      "Bookmarks",
+      "Bookmarks.bak",
+      "Cookies",
+      "Cookies-journal",
+      "Current Session",
+      "Current Tabs",
+      "Favicons",
+      "History",
+      "History-journal",
+      "Last Session",
+      "Last Tabs",
+      "Login Data",
+      "Login Data For Account",
+      "Network Persistent State",
+      "Preferences",
+      "Secure Preferences",
+      "Session Storage",
+      "Top Sites",
+      "Visited Links",
+      "Web Data"
+    ],
+    "safe_dir_name_patterns": [
+      "Cache",
+      "Caches",
+      "Code Cache",
+      "GPUCache",
+      "GrShaderCache",
+      "ShaderCache",
+      "Temp",
+      "Tmp",
+      "Logs",
+      "Crashpad",
+      "CrashDumps",
+      "Dumps",
+      "blob_storage",
+      "Service Worker\\CacheStorage"
+    ]
+  },
+  "apps": [
+    {
+      "id": "wechat",
+      "name": "WeChat",
+      "vendor": "Tencent",
+      "category": "chat",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Tencent\\WeChat",
+        "%LOCALAPPDATA%\\Tencent\\WeChat",
+        "%LOCALAPPDATA%\\WeChat"
+      ],
+      "exclude_paths": [
+        "%USERPROFILE%\\Documents\\WeChat Files"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Code Cache", "GPUCache", "Temp", "Logs", "Crashpad", "XWeb"],
+          "exclude": ["Storage", "Local Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ],
+      "notes": "WeChat Files usually contains user attachments and exported data."
+    },
+    {
+      "id": "qq",
+      "name": "QQ",
+      "vendor": "Tencent",
+      "category": "chat",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Tencent\\QQ",
+        "%LOCALAPPDATA%\\Tencent\\QQ"
+      ],
+      "exclude_paths": [
+        "%USERPROFILE%\\Documents\\Tencent Files"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Temp", "Logs", "Crash", "Crashpad", "GPUCache", "Code Cache"],
+          "exclude": ["Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "tim",
+      "name": "TIM",
+      "vendor": "Tencent",
+      "category": "chat",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Tencent\\TIM",
+        "%LOCALAPPDATA%\\Tencent\\TIM"
+      ],
+      "exclude_paths": [
+        "%USERPROFILE%\\Documents\\Tencent Files"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Temp", "Logs", "Crash", "Crashpad", "GPUCache", "Code Cache"],
+          "exclude": ["Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "dingtalk",
+      "name": "DingTalk",
+      "vendor": "Alibaba",
+      "category": "chat",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\DingTalk",
+        "%LOCALAPPDATA%\\DingTalk",
+        "%APPDATA%\\dingding"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Code Cache", "GPUCache", "tmp", "Temp", "Logs", "Crashpad"],
+          "exclude": ["Local Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "feishu",
+      "name": "Feishu",
+      "vendor": "ByteDance",
+      "category": "office",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\LarkShell",
+        "%LOCALAPPDATA%\\LarkShell",
+        "%APPDATA%\\Feishu"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Code Cache", "GPUCache", "blob_storage", "Logs", "Crashpad"],
+          "exclude": ["Local Storage", "IndexedDB", "Session Storage", "Storage"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "wecom",
+      "name": "WeCom",
+      "vendor": "Tencent",
+      "category": "office",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Tencent\\WXWork",
+        "%LOCALAPPDATA%\\Tencent\\WXWork"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Code Cache", "GPUCache", "Logs", "Crashpad", "Temp"],
+          "exclude": ["Storage", "Data", "Local Storage", "IndexedDB"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "youdaonote",
+      "name": "Youdao Note",
+      "vendor": "NetEase",
+      "category": "notes",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Youdao\\ynote",
+        "%LOCALAPPDATA%\\Youdao\\YNote"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Temp", "Logs"],
+          "exclude": ["data", "db", "storage"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "baidunetdisk",
+      "name": "Baidu Netdisk",
+      "vendor": "Baidu",
+      "category": "cloud_drive",
+      "risk_level": "high",
+      "paths": [
+        "%APPDATA%\\baidu\\BaiduNetdisk",
+        "%LOCALAPPDATA%\\BaiduNetdisk"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Temp", "Logs", "Crash"],
+          "exclude": ["sync", "download", "RecycleBin", "users"],
+          "delete_safe": false,
+          "category": "cache"
+        }
+      ],
+      "notes": "Cloud sync and offline files can be mixed into nearby folders."
+    },
+    {
+      "id": "xunlei",
+      "name": "Xunlei",
+      "vendor": "Xunlei",
+      "category": "download",
+      "risk_level": "high",
+      "paths": [
+        "%APPDATA%\\Thunder Network\\Thunder",
+        "%LOCALAPPDATA%\\Thunder"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Temp", "Profiles\\TaskDb\\cache", "Logs"],
+          "exclude": ["Profiles\\TaskDb", "TDDOWNLOAD", "Downloads"],
+          "delete_safe": false,
+          "category": "download_cache"
+        }
+      ]
+    },
+    {
+      "id": "quark",
+      "name": "Quark",
+      "vendor": "Alibaba",
+      "category": "browser",
+      "risk_level": "low",
+      "paths": [
+        "%LOCALAPPDATA%\\Quark\\User Data\\Default",
+        "%LOCALAPPDATA%\\Quark\\User Data\\Profile *"
+      ],
+      "rules": [
+        {
+          "type": "relative_dir",
+          "include": ["Cache", "Code Cache", "GPUCache", "GrShaderCache", "Service Worker\\CacheStorage"],
+          "exclude": ["Local Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "browser_cache"
+        }
+      ]
+    },
+    {
+      "id": "360se",
+      "name": "360 Secure Browser",
+      "vendor": "360",
+      "category": "browser",
+      "risk_level": "low",
+      "paths": [
+        "%APPDATA%\\360se6\\User Data\\Default",
+        "%APPDATA%\\360se6\\User Data\\Profile *"
+      ],
+      "rules": [
+        {
+          "type": "relative_dir",
+          "include": ["Cache", "Code Cache", "GPUCache", "GrShaderCache"],
+          "exclude": ["Local Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "browser_cache"
+        }
+      ]
+    },
+    {
+      "id": "360chrome",
+      "name": "360 Chrome",
+      "vendor": "360",
+      "category": "browser",
+      "risk_level": "low",
+      "paths": [
+        "%LOCALAPPDATA%\\360Chrome\\Chrome\\User Data\\Default",
+        "%LOCALAPPDATA%\\360Chrome\\Chrome\\User Data\\Profile *"
+      ],
+      "rules": [
+        {
+          "type": "relative_dir",
+          "include": ["Cache", "Code Cache", "GPUCache", "GrShaderCache"],
+          "exclude": ["Local Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "browser_cache"
+        }
+      ]
+    },
+    {
+      "id": "sougouexplorer",
+      "name": "Sogou Explorer",
+      "vendor": "Sogou",
+      "category": "browser",
+      "risk_level": "low",
+      "paths": [
+        "%APPDATA%\\SogouExplorer\\Webkit",
+        "%APPDATA%\\SogouExplorer\\Webkit\\Default"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Code Cache", "GPUCache"],
+          "exclude": ["Local Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "browser_cache"
+        }
+      ]
+    },
+    {
+      "id": "chrome",
+      "name": "Google Chrome",
+      "vendor": "Google",
+      "category": "browser",
+      "risk_level": "low",
+      "paths": [
+        "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default",
+        "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Profile *"
+      ],
+      "rules": [
+        {
+          "type": "relative_dir",
+          "include": ["Cache", "Code Cache", "GPUCache", "GrShaderCache", "Service Worker\\CacheStorage"],
+          "exclude": ["Local Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "browser_cache"
+        }
+      ]
+    },
+    {
+      "id": "edge",
+      "name": "Microsoft Edge",
+      "vendor": "Microsoft",
+      "category": "browser",
+      "risk_level": "low",
+      "paths": [
+        "%LOCALAPPDATA%\\Microsoft\\Edge\\User Data\\Default",
+        "%LOCALAPPDATA%\\Microsoft\\Edge\\User Data\\Profile *"
+      ],
+      "rules": [
+        {
+          "type": "relative_dir",
+          "include": ["Cache", "Code Cache", "GPUCache", "GrShaderCache", "Service Worker\\CacheStorage"],
+          "exclude": ["Local Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "browser_cache"
+        }
+      ]
+    },
+    {
+      "id": "firefox",
+      "name": "Mozilla Firefox",
+      "vendor": "Mozilla",
+      "category": "browser",
+      "risk_level": "low",
+      "paths": [
+        "%LOCALAPPDATA%\\Mozilla\\Firefox\\Profiles\\*"
+      ],
+      "rules": [
+        {
+          "type": "relative_dir",
+          "include": ["cache2", "jumpListCache", "shader-cache"],
+          "exclude": ["storage", "sessionstore-backups"],
+          "delete_safe": true,
+          "category": "browser_cache"
+        }
+      ]
+    },
+    {
+      "id": "opera",
+      "name": "Opera",
+      "vendor": "Opera",
+      "category": "browser",
+      "risk_level": "low",
+      "paths": [
+        "%APPDATA%\\Opera Software\\Opera Stable",
+        "%APPDATA%\\Opera Software\\Opera GX Stable"
+      ],
+      "rules": [
+        {
+          "type": "relative_dir",
+          "include": ["Cache", "Code Cache", "GPUCache", "GrShaderCache"],
+          "exclude": ["Local Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "browser_cache"
+        }
+      ]
+    },
+    {
+      "id": "brave",
+      "name": "Brave",
+      "vendor": "Brave",
+      "category": "browser",
+      "risk_level": "low",
+      "paths": [
+        "%LOCALAPPDATA%\\BraveSoftware\\Brave-Browser\\User Data\\Default",
+        "%LOCALAPPDATA%\\BraveSoftware\\Brave-Browser\\User Data\\Profile *"
+      ],
+      "rules": [
+        {
+          "type": "relative_dir",
+          "include": ["Cache", "Code Cache", "GPUCache", "GrShaderCache"],
+          "exclude": ["Local Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "browser_cache"
+        }
+      ]
+    },
+    {
+      "id": "steam",
+      "name": "Steam",
+      "vendor": "Valve",
+      "category": "game_platform",
+      "risk_level": "medium",
+      "paths": [
+        "%PROGRAMFILES(X86)%\\Steam",
+        "%PROGRAMFILES%\\Steam",
+        "%LOCALAPPDATA%\\Steam"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["appcache", "htmlcache", "logs", "dump", "dumps"],
+          "exclude": ["steamapps", "userdata", "config", "downloading"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "epicgames",
+      "name": "Epic Games Launcher",
+      "vendor": "Epic Games",
+      "category": "game_platform",
+      "risk_level": "medium",
+      "paths": [
+        "%LOCALAPPDATA%\\EpicGamesLauncher\\Saved",
+        "%LOCALAPPDATA%\\EpicGamesLauncher"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["webcache", "Logs", "Crashes"],
+          "exclude": ["Config", "SaveGames"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "wegame",
+      "name": "WeGame",
+      "vendor": "Tencent",
+      "category": "game_platform",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Tencent\\WeGame",
+        "%LOCALAPPDATA%\\Tencent\\WeGame"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Temp", "Logs", "GPUCache", "Code Cache"],
+          "exclude": ["Download", "Game", "Storage"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "discord",
+      "name": "Discord",
+      "vendor": "Discord",
+      "category": "chat",
+      "risk_level": "low",
+      "paths": [
+        "%APPDATA%\\discord"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Code Cache", "GPUCache", "Crashpad", "logs"],
+          "exclude": ["Local Storage", "IndexedDB", "Session Storage"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "telegram",
+      "name": "Telegram Desktop",
+      "vendor": "Telegram",
+      "category": "chat",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Telegram Desktop"
+      ],
+      "rules": [
+        {
+          "type": "relative_dir",
+          "include": ["tdata\\user_data\\cache", "tdata\\user_data\\media_cache"],
+          "exclude": ["tdata"],
+          "delete_safe": false,
+          "category": "chat_cache"
+        }
+      ],
+      "notes": "Strictly match the cache subdirectories only."
+    },
+    {
+      "id": "teams",
+      "name": "Microsoft Teams",
+      "vendor": "Microsoft",
+      "category": "office",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Microsoft\\Teams",
+        "%LOCALAPPDATA%\\Packages\\MSTeams_8wekyb3d8bbwe\\LocalCache"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Code Cache", "GPUCache", "tmp", "Logs", "media-stack"],
+          "exclude": ["IndexedDB", "Local Storage"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "zoom",
+      "name": "Zoom",
+      "vendor": "Zoom",
+      "category": "meeting",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Zoom"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["data", "logs", "tmp"],
+          "exclude": ["userdata", "bin", "record"],
+          "delete_safe": false,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "wps",
+      "name": "WPS Office",
+      "vendor": "Kingsoft",
+      "category": "office",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Kingsoft",
+        "%LOCALAPPDATA%\\Kingsoft"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["temp", "Temp", "cache", "Cache", "Logs"],
+          "exclude": ["office6", "templates", "backup"],
+          "delete_safe": true,
+          "category": "office_cache"
+        }
+      ]
+    },
+    {
+      "id": "office",
+      "name": "Microsoft Office",
+      "vendor": "Microsoft",
+      "category": "office",
+      "risk_level": "medium",
+      "paths": [
+        "%LOCALAPPDATA%\\Microsoft\\Office",
+        "%APPDATA%\\Microsoft\\Office"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["OfficeFileCache", "Recent", "Resiliency", "Telemetry", "Logs", "Temp"],
+          "exclude": ["Templates", "Addins"],
+          "delete_safe": false,
+          "category": "office_cache"
+        }
+      ]
+    },
+    {
+      "id": "vscode",
+      "name": "Visual Studio Code",
+      "vendor": "Microsoft",
+      "category": "developer",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Code"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "CachedData", "Code Cache", "GPUCache", "logs", "Crashpad"],
+          "exclude": ["User", "Backups", "workspaceStorage", "globalStorage"],
+          "delete_safe": true,
+          "category": "cache"
+        }
+      ]
+    },
+    {
+      "id": "pycharm",
+      "name": "PyCharm",
+      "vendor": "JetBrains",
+      "category": "developer",
+      "risk_level": "medium",
+      "paths": [
+        "%LOCALAPPDATA%\\JetBrains\\PyCharm*",
+        "%APPDATA%\\JetBrains\\PyCharm*"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["caches", "log", "tmp"],
+          "exclude": ["config", "plugins", "options"],
+          "delete_safe": true,
+          "category": "ide_cache"
+        }
+      ]
+    },
+    {
+      "id": "idea",
+      "name": "IntelliJ IDEA",
+      "vendor": "JetBrains",
+      "category": "developer",
+      "risk_level": "medium",
+      "paths": [
+        "%LOCALAPPDATA%\\JetBrains\\IntelliJIdea*",
+        "%APPDATA%\\JetBrains\\IntelliJIdea*"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["caches", "log", "tmp"],
+          "exclude": ["config", "plugins", "options"],
+          "delete_safe": true,
+          "category": "ide_cache"
+        }
+      ]
+    },
+    {
+      "id": "clion",
+      "name": "CLion",
+      "vendor": "JetBrains",
+      "category": "developer",
+      "risk_level": "medium",
+      "paths": [
+        "%LOCALAPPDATA%\\JetBrains\\CLion*",
+        "%APPDATA%\\JetBrains\\CLion*"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["caches", "log", "tmp"],
+          "exclude": ["config", "plugins", "options"],
+          "delete_safe": true,
+          "category": "ide_cache"
+        }
+      ]
+    },
+    {
+      "id": "spotify",
+      "name": "Spotify",
+      "vendor": "Spotify",
+      "category": "media",
+      "risk_level": "high",
+      "paths": [
+        "%APPDATA%\\Spotify",
+        "%LOCALAPPDATA%\\Spotify"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Browser", "Data", "Storage", "Cache"],
+          "exclude": ["Users"],
+          "delete_safe": false,
+          "category": "media_cache"
+        }
+      ]
+    },
+    {
+      "id": "neteasemusic",
+      "name": "NetEase Cloud Music",
+      "vendor": "NetEase",
+      "category": "media",
+      "risk_level": "high",
+      "paths": [
+        "%LOCALAPPDATA%\\Netease\\CloudMusic",
+        "%APPDATA%\\Netease\\CloudMusic"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Temp", "Logs", "webdata\\Cache"],
+          "exclude": ["Music", "Download", "LocalData"],
+          "delete_safe": false,
+          "category": "media_cache"
+        }
+      ]
+    },
+    {
+      "id": "qqmusic",
+      "name": "QQ Music",
+      "vendor": "Tencent",
+      "category": "media",
+      "risk_level": "high",
+      "paths": [
+        "%APPDATA%\\Tencent\\QQMusic",
+        "%LOCALAPPDATA%\\Tencent\\QQMusic"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Temp", "Logs"],
+          "exclude": ["Song", "Download", "Playlist"],
+          "delete_safe": false,
+          "category": "media_cache"
+        }
+      ]
+    },
+    {
+      "id": "potplayer",
+      "name": "PotPlayer",
+      "vendor": "Kakao",
+      "category": "media",
+      "risk_level": "low",
+      "paths": [
+        "%APPDATA%\\PotPlayerMini",
+        "%APPDATA%\\DAUM\\PotPlayer"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Capture", "Log", "Temp"],
+          "exclude": ["Playlist", "Subtitle"],
+          "delete_safe": false,
+          "category": "media_cache"
+        }
+      ]
+    },
+    {
+      "id": "obs",
+      "name": "OBS Studio",
+      "vendor": "OBS",
+      "category": "media",
+      "risk_level": "low",
+      "paths": [
+        "%APPDATA%\\obs-studio"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["crashes", "logs", "updates"],
+          "exclude": ["basic", "plugin_config", "global.ini"],
+          "delete_safe": true,
+          "category": "logs"
+        }
+      ]
+    },
+    {
+      "id": "bilibili",
+      "name": "Bilibili",
+      "vendor": "Bilibili",
+      "category": "media",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\bilibili",
+        "%LOCALAPPDATA%\\bilibili"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Code Cache", "GPUCache", "Logs"],
+          "exclude": ["Local Storage", "IndexedDB", "Download"],
+          "delete_safe": true,
+          "category": "media_cache"
+        }
+      ]
+    },
+    {
+      "id": "adobe_acrobat",
+      "name": "Adobe Acrobat",
+      "vendor": "Adobe",
+      "category": "document",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Adobe\\Acrobat",
+        "%LOCALAPPDATA%\\Adobe\\Acrobat"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Temp", "Logs"],
+          "exclude": ["Preferences", "Security"],
+          "delete_safe": true,
+          "category": "document_cache"
+        }
+      ]
+    },
+    {
+      "id": "photoshop",
+      "name": "Adobe Photoshop",
+      "vendor": "Adobe",
+      "category": "design",
+      "risk_level": "high",
+      "paths": [
+        "%APPDATA%\\Adobe\\Adobe Photoshop*",
+        "%LOCALAPPDATA%\\Adobe\\Adobe Photoshop*",
+        "%TEMP%"
+      ],
+      "rules": [
+        {
+          "type": "file_pattern",
+          "include": ["~PST*.tmp", "Photoshop Temp*"],
+          "exclude": [],
+          "delete_safe": false,
+          "category": "temp_file"
+        }
+      ]
+    },
+    {
+      "id": "illustrator",
+      "name": "Adobe Illustrator",
+      "vendor": "Adobe",
+      "category": "design",
+      "risk_level": "high",
+      "paths": [
+        "%APPDATA%\\Adobe\\Adobe Illustrator*",
+        "%LOCALAPPDATA%\\Adobe\\Adobe Illustrator*",
+        "%TEMP%"
+      ],
+      "rules": [
+        {
+          "type": "file_pattern",
+          "include": ["AIPrefs Temp*", "*.tmp"],
+          "exclude": [],
+          "delete_safe": false,
+          "category": "temp_file"
+        }
+      ]
+    },
+    {
+      "id": "psimaging",
+      "name": "Meitu XiuXiu",
+      "vendor": "Meitu",
+      "category": "design",
+      "risk_level": "medium",
+      "paths": [
+        "%APPDATA%\\Meitu",
+        "%LOCALAPPDATA%\\Meitu"
+      ],
+      "rules": [
+        {
+          "type": "dir_name",
+          "include": ["Cache", "Temp", "Logs"],
+          "exclude": ["Projects", "UserData"],
+          "delete_safe": true,
+          "category": "design_cache"
+        }
+      ]
+    }
+  ]
+}
